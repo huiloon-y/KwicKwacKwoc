@@ -7,11 +7,14 @@
  - Inputs either between double quotations or none (eg "Fast and Furious" or Fast and Furious)
 */
 
+package sg.edu.nus.comp.cs3213;
+
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Scanner;
 
-
-public class KWIC_System {
+public class KWICSystem {
 
 	public static void main (String[] args) throws IOException {
 		Scanner sc = new Scanner(System.in);
