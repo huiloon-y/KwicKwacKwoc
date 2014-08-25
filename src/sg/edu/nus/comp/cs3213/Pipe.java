@@ -1,8 +1,8 @@
 package sg.edu.nus.comp.cs3213;
 
 import java.util.LinkedList;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.Queue;
+import java.util.concurrent.Semaphore;
 
 /**
  * A pipe within a data processing pipeline.
@@ -12,38 +12,41 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class Pipe {
 	// A buffer containing work units to be processed.
-	private LinkedList<WorkUnit> mWorkBuffer;
+	private Queue<WorkUnit> mWorkBuffer = new LinkedList<WorkUnit>();
 	
-	// Lock for reading and writing; enforces blocking behavior on the read()
-	// and write() methods.
-	private Lock mEmptyLock = new ReentrantLock();
-	
-	/**
-	 * The pipe constructor.
-	 */
-	Pipe() {
-		// Default state is locked, because there are no items in the buffer.
-		mEmptyLock.lock();
-	}
+	// Semaphore for reading and writing; enforces blocking behavior on the
+	// read() and write() methods.
+	private Semaphore mSemaphore = new Semaphore(20, true);
 	
 	/**
 	 * Writes a work unit to this pipe.
 	 * If the pipe is full, this call blocks.
 	 */
-	void write(WorkUnit work) {
-		mWorkBuffer.add(work);
-		mEmptyLock.unlock();
+	public synchronized void write(WorkUnit work) {
+		try {
+			mSemaphore.acquire();
+			mWorkBuffer.add(work);
+			this.notify();
+			
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**
 	 * Reads a work unit from this pipe.
 	 * If the pipe is empty, this call blocks.
 	 */
-	WorkUnit read() {
+	public synchronized WorkUnit read() {
 		if (mWorkBuffer.isEmpty()) {
-			mEmptyLock.lock();
+			try {
+				this.wait();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 		
+		mSemaphore.release();
 		return mWorkBuffer.poll();
 	}
 }
