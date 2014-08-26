@@ -60,9 +60,14 @@ public abstract class Filter implements Runnable {
 						"filter is invoked.");
 			}
 			
-			WorkUnit work = mInputPort.read();
-			work = this.process(work);
-			mOutputPort.write(work);
+			try {
+				WorkUnit work = mInputPort.read();
+				work = this.process(work);
+				mOutputPort.write(work);
+			} catch (InterruptedException e) {
+				// We got interrupted, kill the thread.
+				return;
+			}
 		}
 	}
 }

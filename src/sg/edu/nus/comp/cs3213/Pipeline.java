@@ -12,19 +12,39 @@ import java.util.List;
  */
 public class Pipeline {
 	// Create a source pipe where we can feed in new work information.
-	private Pipe mSourcePipe = new Pipe();
+	private final Pipe mSourcePipe = new Pipe();
 	
 	// The filters in this pipeline.
-	private List<Filter> mFilters = new ArrayList<Filter>();
+	private final List<Filter> mFilters = new ArrayList<Filter>();
+	
+	// The threads owned by the pipeline.
+	private final List<Thread> mThreads = new LinkedList<Thread>();
+	
+	// Callback to fire when a work unit is complete.
+	private OnWorkUnitCompleteCallback mOnWorkUnitCompleteCallback;
+	
+	// Callback to fire when a filter is created.
+	private OnFilterCreateCallback mOnFilterCreateCallback;
 	
 	/**
 	 * Private constructor to prevent direct construction.
 	 */
-	private Pipeline(Builder builder) {		
+	private Pipeline(Builder builder) {
+		// Copy the callback.
+		mOnWorkUnitCompleteCallback = builder.mOnWorkUnitCompleteCallback;
+		mOnFilterCreateCallback = builder.mOnFilterCreateCallback;
+		
 		// Create the filters.
 		for (Class<? extends Filter> clazz : builder.mFilterClasses) {
 			try {
-				mFilters.add(clazz.newInstance());
+				Filter filter = clazz.newInstance();
+				
+				if (mOnFilterCreateCallback != null) {
+					mOnFilterCreateCallback.onCreate(filter);
+				}
+				
+				mFilters.add(filter);
+				
 			} catch (InstantiationException e) {
 				throw new IllegalArgumentException("Unable to instantiate " +
 						"filter " + e.getClass().getName());
@@ -42,6 +62,10 @@ public class Pipeline {
 			// No filters!
 			return;
 		}
+		
+		// Connect the sink pipe to the sink filter.
+		Filter filter = new SinkFilter();
+		mFilters.add(filter);
 		
 		// Create pipes for each filter.
 		for (int i = 0; i < mFilters.size(); ++i) {
@@ -63,13 +87,20 @@ public class Pipeline {
 	 * Starts the pipeline.
 	 */
 	public void start() {
-		List<Thread> threads = new LinkedList<Thread>();
-		
 		// Spawn a new thread to run each filter.
 		for (Filter filter : mFilters) {
 			Thread thread = new Thread(filter);
 			thread.start();
-			threads.add(thread);
+			mThreads.add(thread);
+		}
+	}
+
+	/**
+	 * Stops the pipeline.
+	 */
+	public void stop() {
+		for (Thread thread : mThreads) {
+			thread.interrupt();
 		}
 	}
 	
@@ -77,7 +108,11 @@ public class Pipeline {
 	 * Pumps a work unit through the pipeline.
 	 */
 	public void pump(WorkUnit work) {
-		mSourcePipe.write(work);
+		try {
+			mSourcePipe.write(work);
+		} catch (InterruptedException e) {
+			System.out.println("Caught InterruptedException in pump()");
+		}
 	}
 	
 	/**
@@ -88,11 +123,32 @@ public class Pipeline {
 		private List<Class<? extends Filter>> mFilterClasses =
 				new ArrayList<Class<? extends Filter>>();
 		
+		// Callback to fire when a filter is created.
+		private OnFilterCreateCallback mOnFilterCreateCallback;
+		
+		// Callback to fire when a work unit is complete.
+		private OnWorkUnitCompleteCallback mOnWorkUnitCompleteCallback;
+		
 		/**
 		 * Appends a filter to the pipeline.
 		 */
 		public void append(Class<? extends Filter> filter) {
 			mFilterClasses.add(filter);
+		}
+		
+		/**
+		 * Sets the creation callback for a filter.
+		 * This is used to set options for a filter.
+		 */
+		public void setOnFilterCreate(OnFilterCreateCallback callback) {
+			mOnFilterCreateCallback = callback;
+		}
+		
+		/**
+		 * Sets the completion callback for a work unit.
+		 */
+		public void setOnWorkUnitComplete(OnWorkUnitCompleteCallback callback) {
+			mOnWorkUnitCompleteCallback = callback;
 		}
 		
 		/**
@@ -103,5 +159,32 @@ public class Pipeline {
 			return pipeline;
 		}
 	}
+	
+	/**
+	 * A special filter to receive completed work units.
+	 */
+	private class SinkFilter extends Filter {
+		@Override
+		protected WorkUnit process(WorkUnit work) {
+			if (mOnWorkUnitCompleteCallback != null) {
+				mOnWorkUnitCompleteCallback.onComplete(work, Pipeline.this);
+			}
+			
+			return work;
+		}
+	}
 
+	/**
+	 * Callback interface for completed work units.
+	 */
+	public interface OnWorkUnitCompleteCallback {
+		void onComplete(WorkUnit work, Pipeline pipeline);
+	}
+	
+	/**
+	 * Callback interface for filter creation.
+	 */
+	public interface OnFilterCreateCallback {
+		void onCreate(Filter filter);
+	}
 }

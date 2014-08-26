@@ -14,9 +14,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Scanner;
 
+import sg.edu.nus.comp.cs3213.Pipeline.OnFilterCreateCallback;
+import sg.edu.nus.comp.cs3213.Pipeline.OnWorkUnitCompleteCallback;
+import sg.edu.nus.comp.cs3213.filters.UpperCaseFilter;
+
 public class KWICSystem {
 
 	public static void main (String[] args) throws IOException {
+		// Read user input.
 		Scanner sc = new Scanner(System.in);
 		String input, ignoreWords;		
 		ArrayList <ArrayList<String>> listOfInput = new ArrayList<ArrayList<String>>();
@@ -28,8 +33,8 @@ public class KWICSystem {
 		System.out.print("Please enter words to ignore: ");
 		ignoreWords = sc.nextLine();
 		
-		listOfInput = indexWords(input);
-		listOfIgnoreWords = indexWords(ignoreWords);
+		listOfInput = parseInput(input);
+		listOfIgnoreWords = parseInput(ignoreWords);
 		
 		listOfOutput = circularShift(listOfInput, listOfIgnoreWords);
 		Collections.sort(listOfOutput);
@@ -40,10 +45,42 @@ public class KWICSystem {
 		}
 		
 		sc.close();
+		
+		// Build the data processing pipeline.
+		Pipeline.Builder builder = new Pipeline.Builder();
+		builder.append(UpperCaseFilter.class);
+		
+		builder.setOnFilterCreate(new OnFilterCreateCallback() {
+			@Override
+			public void onCreate(Filter filter) {
+				System.out.println("Filter created");
+			}
+		});
+		
+		builder.setOnWorkUnitComplete(new OnWorkUnitCompleteCallback() {
+			int mWorkUnitsCompleted = 0;
+			
+			@Override
+			public void onComplete(WorkUnit work, Pipeline pipeline) {
+				System.out.println(work.getData());
+				mWorkUnitsCompleted++;
+				
+				if (mWorkUnitsCompleted == 20) {
+					pipeline.stop();
+				}
+			}
+		});
+		
+		final Pipeline pipeline = builder.build();
+		pipeline.start();
+		
+		for (int i = 0; i < 20; ++i) {
+			pipeline.pump(new WorkUnit("test " + i));
+		}
 	}
 	
 	// To trim, remove "" and split up each word
-	private static ArrayList<ArrayList<String>> indexWords (String input) {
+	private static ArrayList<ArrayList<String>> parseInput (String input) {
 		ArrayList <ArrayList<String>> output = new ArrayList<ArrayList<String>>();
 		
 		String[] inputTokens = input.split(",");

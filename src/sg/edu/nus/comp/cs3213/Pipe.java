@@ -12,38 +12,32 @@ import java.util.concurrent.Semaphore;
  */
 public class Pipe {
 	// A buffer containing work units to be processed.
-	private Queue<WorkUnit> mWorkBuffer = new LinkedList<WorkUnit>();
+	private final Queue<WorkUnit> mWorkBuffer = new LinkedList<WorkUnit>();
+	
+	// Buffer size for the pipe.
+	private final static int BUFFER_SIZE = 20;
 	
 	// Semaphore for reading and writing; enforces blocking behavior on the
 	// read() and write() methods.
-	private Semaphore mSemaphore = new Semaphore(20, true);
+	private final Semaphore mSemaphore = new Semaphore(BUFFER_SIZE, true);
 	
 	/**
 	 * Writes a work unit to this pipe.
 	 * If the pipe is full, this call blocks.
 	 */
-	public synchronized void write(WorkUnit work) {
-		try {
-			mSemaphore.acquire();
-			mWorkBuffer.add(work);
-			this.notify();
-			
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+	public synchronized void write(WorkUnit work) throws InterruptedException {
+		mSemaphore.acquire();
+		mWorkBuffer.add(work);
+		this.notify();
 	}
 	
 	/**
 	 * Reads a work unit from this pipe.
 	 * If the pipe is empty, this call blocks.
 	 */
-	public synchronized WorkUnit read() {
+	public synchronized WorkUnit read() throws InterruptedException {
 		if (mWorkBuffer.isEmpty()) {
-			try {
-				this.wait();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			this.wait();
 		}
 		
 		mSemaphore.release();
