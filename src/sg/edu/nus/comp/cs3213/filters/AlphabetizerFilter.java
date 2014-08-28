@@ -13,18 +13,18 @@ import sg.edu.nus.comp.cs3213.WorkUnit;
  * 
  * This filter accepts input in the following format:
  * 
- *     WorkUnit: Circular Shift 1
- *     WorkUnit: Circular Shift 2
- *     WorkUnit: Circular Shift ...
- *     WorkUnit: Circular Shift n
+ *     WorkUnit: Data 1
+ *     WorkUnit: Data 2
+ *     WorkUnit: Data ...
+ *     WorkUnit: Data n
  *     WorkUnit: Empty, last bit set
  *
  * This filter generates work units in the following format:
  *     
- *     WorkUnit: Circular Shift 1
- *     WorkUnit: Circular Shift 2
- *     WorkUnit: Circular Shift ...
- *     WorkUnit: Circular Shift n
+ *     WorkUnit: Data 1
+ *     WorkUnit: Data 2
+ *     WorkUnit: Data ...
+ *     WorkUnit: Data n
  *     WorkUnit: Empty, last bit set
  * 
  */

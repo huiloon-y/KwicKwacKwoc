@@ -29,6 +29,11 @@ import sg.edu.nus.comp.cs3213.WorkUnit;
  *     WorkUnit: Circular Shift 2
  *     WorkUnit: Circular Shift ...
  *     WorkUnit: Circular Shift n
+ *     WorkUnit: Empty
+ *     WorkUnit: Word to Ignore 1
+ *     WorkUnit: Word to Ignore 2
+ *     WorkUnit: Word to Ignore ...
+ *     WorkUnit: Word to Ignore n
  *     WorkUnit: Empty, last bit set
  */
 public class CircularShifterFilter extends Filter {
@@ -83,15 +88,13 @@ public class CircularShifterFilter extends Filter {
 				for (int j = 0; j < titleTokens.length; ++j) {
 					// If first word is a keyword, add it to output list and append
 					// word at the end of line.
-					if (!isIgnoreWord(titleTokens[0], mWordsToIgnore)) {
-						String outputString = titleTokens[0].toUpperCase() + " ";
-						for (int k = 1; k < titleTokens.length; ++k) {
-							outputString += titleTokens[k] + " ";
-						}
-						
-						workUnits.add(new WorkUnit(outputString));
-						mLogger.finest("Created WorkUnit: " + outputString);
+					String outputString = titleTokens[0].toUpperCase() + " ";
+					for (int k = 1; k < titleTokens.length; ++k) {
+						outputString += titleTokens[k] + " ";
 					}
+					
+					workUnits.add(new WorkUnit(outputString));
+					mLogger.finest("Created WorkUnit: " + outputString);
 					
 					// Append word to end of line.
 					String temp = titleTokens[0];
@@ -100,6 +103,12 @@ public class CircularShifterFilter extends Filter {
 					}
 					titleTokens[titleTokens.length - 1] = temp;
 				}
+			}
+			
+			workUnits.add(new WorkUnit());
+			
+			for (String wordToIgnore : mWordsToIgnore) {
+				workUnits.add(new WorkUnit(wordToIgnore));
 			}
 			
 			WorkUnit lastWorkUnit = new WorkUnit();
@@ -119,17 +128,6 @@ public class CircularShifterFilter extends Filter {
 			mTitles.clear();
 			mWordsToIgnore.clear();
 		}
-	}
-	
-	// Returns true boolean if current word is an ignore word
-	private boolean isIgnoreWord (String word, List<String> wordsToIgnore) {
-		for (int i = 0; i < wordsToIgnore.size(); i++) {
-			if (wordsToIgnore.get(i).equalsIgnoreCase(word)) {
-				return true;
-			}
-		}
-		
-		return false;
 	}
 
 }
