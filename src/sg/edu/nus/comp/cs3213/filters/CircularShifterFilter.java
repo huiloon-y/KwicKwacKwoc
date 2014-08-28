@@ -88,7 +88,8 @@ public class CircularShifterFilter extends Filter {
 				for (int j = 0; j < titleTokens.length; ++j) {
 					// If first word is a keyword, add it to output list and append
 					// word at the end of line.
-					String outputString = titleTokens[0].toUpperCase() + " ";
+					String outputString = titleTokens[0].substring(0, 1).toUpperCase() +
+							titleTokens[0].substring(1) + " ";
 					for (int k = 1; k < titleTokens.length; ++k) {
 						outputString += titleTokens[k] + " ";
 					}

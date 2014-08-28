@@ -184,13 +184,13 @@ public class Pipeline {
 	 * Callback interface for completed work units.
 	 */
 	public interface OnWorkUnitCompleteCallback {
-		void onComplete(WorkUnit work, Pipeline pipeline);
+		public void onComplete(WorkUnit work, Pipeline pipeline);
 	}
 	
 	/**
 	 * Callback interface for filter creation.
 	 */
 	public interface OnFilterCreateCallback {
-		void onCreate(Filter filter);
+		public void onCreate(Filter filter);
 	}
 }
