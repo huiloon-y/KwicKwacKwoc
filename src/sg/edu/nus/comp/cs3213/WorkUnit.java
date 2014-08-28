@@ -7,14 +7,21 @@ package sg.edu.nus.comp.cs3213;
  * about the work itself. For instance, the position of the work unit in the
  * stream of work units.
  */
-public class WorkUnit {
+public class WorkUnit implements Comparable<WorkUnit> {
 	// Contents of this work unit.
 	private String mData;
+	
+	// Is this work unit the last one?
+	private boolean mIsLast = false;
 	
 	/**
 	 * Constructs a new work unit.
 	 */
-	WorkUnit(String data) {
+	public WorkUnit() {
+		this.setData(new String());
+	}
+	
+	public WorkUnit(String data) {
 		this.setData(data);
 	}
 	
@@ -30,5 +37,24 @@ public class WorkUnit {
 	 */
 	public String getData() {
 		return mData;
+	}
+	
+	/**
+	 * Is this work unit the last one?
+	 */
+	public boolean isLast() {
+		return mIsLast;
+	}
+	
+	/**
+	 * Designates this work unit to be the last work unit.
+	 */
+	public void setLast(boolean last) {
+		mIsLast = last;
+	}
+
+	@Override
+	public int compareTo(WorkUnit work) {
+		return this.mData.compareTo(work.mData);
 	}
 }

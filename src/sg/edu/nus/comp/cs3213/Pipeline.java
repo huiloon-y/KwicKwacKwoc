@@ -165,12 +165,10 @@ public class Pipeline {
 	 */
 	private class SinkFilter extends Filter {
 		@Override
-		protected WorkUnit process(WorkUnit work) {
+		protected void process(WorkUnit work) {
 			if (mOnWorkUnitCompleteCallback != null) {
 				mOnWorkUnitCompleteCallback.onComplete(work, Pipeline.this);
 			}
-			
-			return work;
 		}
 	}
 

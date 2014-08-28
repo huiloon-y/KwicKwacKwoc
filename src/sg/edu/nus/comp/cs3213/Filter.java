@@ -44,7 +44,7 @@ public abstract class Filter implements Runnable {
 	/**
 	 * Method to be overridden that does the actual work.
 	 */
-	abstract protected WorkUnit process(WorkUnit work);
+	abstract protected void process(WorkUnit work);
 
 	/**
 	 * Implements the run() method of the threading system. This takes every
@@ -62,8 +62,7 @@ public abstract class Filter implements Runnable {
 			
 			try {
 				WorkUnit work = mInputPort.read();
-				work = this.process(work);
-				mOutputPort.write(work);
+				this.process(work);
 			} catch (InterruptedException e) {
 				// We got interrupted, kill the thread.
 				return;
