@@ -91,6 +91,8 @@ public class CircularShifterFilter extends Filter {
 					String outputString = titleTokens[0].substring(0, 1).toUpperCase();
 					if (titleTokens[0].length() > 1) {
 						outputString += titleTokens[0].substring(1) + " ";
+					} else {
+						outputString += " ";
 					}
 					
 					for (int k = 1; k < titleTokens.length; ++k) {
