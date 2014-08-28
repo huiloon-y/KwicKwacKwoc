@@ -92,6 +92,7 @@ public class CircularShifterFilter extends Filter {
 					for (int k = 1; k < titleTokens.length; ++k) {
 						outputString += titleTokens[k] + " ";
 					}
+					outputString = outputString.trim();
 					
 					workUnits.add(new WorkUnit(outputString));
 					mLogger.finest("Created WorkUnit: " + outputString);

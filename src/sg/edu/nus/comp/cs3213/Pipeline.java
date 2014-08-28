@@ -89,7 +89,15 @@ public class Pipeline {
 	public void start() {
 		// Spawn a new thread to run each filter.
 		for (Filter filter : mFilters) {
+			Thread.UncaughtExceptionHandler handler = new Thread.UncaughtExceptionHandler() {
+				@Override
+				public void uncaughtException(Thread t, Throwable e) {
+					System.err.println("Uncaught exception: " + e);
+				}
+			};
+			
 			Thread thread = new Thread(filter);
+		    thread.setUncaughtExceptionHandler(handler);
 			thread.start();
 			mThreads.add(thread);
 		}

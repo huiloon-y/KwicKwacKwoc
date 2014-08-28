@@ -56,6 +56,14 @@ public class AlphabetizerFilter extends Filter {
 				}	
 			}
 			
+			try {
+				WorkUnit lastWorkUnit = new WorkUnit();
+				lastWorkUnit.setLast(true);
+				getOutputPort().write(lastWorkUnit);
+			} catch (InterruptedException e) {
+				return;
+			}
+			
 			mData.clear();
 		}
 	}
