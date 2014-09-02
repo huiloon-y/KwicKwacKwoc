@@ -2,7 +2,6 @@ package sg.edu.nus.comp.cs3213;
 
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.Semaphore;
 
 /**
  * A pipe within a data processing pipeline.
@@ -17,16 +16,15 @@ public class Pipe {
 	// Buffer size for the pipe.
 	private final static int BUFFER_SIZE = 20;
 	
-	// Semaphore for reading and writing; enforces blocking behavior on the
-	// read() and write() methods.
-	private final Semaphore mSemaphore = new Semaphore(BUFFER_SIZE, true);
-	
 	/**
 	 * Writes a work unit to this pipe.
 	 * If the pipe is full, this call blocks.
 	 */
 	public synchronized void write(WorkUnit work) throws InterruptedException {
-		mSemaphore.acquire();
+		while (mWorkBuffer.size() > BUFFER_SIZE) {
+			this.wait();
+		}
+		
 		mWorkBuffer.add(work);
 		this.notify();
 	}
@@ -36,11 +34,12 @@ public class Pipe {
 	 * If the pipe is empty, this call blocks.
 	 */
 	public synchronized WorkUnit read() throws InterruptedException {
-		if (mWorkBuffer.isEmpty()) {
+		while (mWorkBuffer.isEmpty()) {
 			this.wait();
 		}
 		
-		mSemaphore.release();
-		return mWorkBuffer.poll();
+		WorkUnit work = mWorkBuffer.poll();
+		this.notify();
+		return work;
 	}
 }
