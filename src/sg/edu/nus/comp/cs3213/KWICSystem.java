@@ -17,8 +17,8 @@ import java.util.logging.LogManager;
 import sg.edu.nus.comp.cs3213.Pipeline.OnWorkUnitCompleteCallback;
 import sg.edu.nus.comp.cs3213.filters.AlphabetizerFilter;
 import sg.edu.nus.comp.cs3213.filters.CircularShifterFilter;
+import sg.edu.nus.comp.cs3213.filters.FileInputFilter;
 import sg.edu.nus.comp.cs3213.filters.IgnoreWordsFilter;
-import sg.edu.nus.comp.cs3213.filters.InputFilter;
 
 public class KWICSystem {
 
@@ -27,7 +27,8 @@ public class KWICSystem {
 		
 		// Build the data processing pipeline.
 		Pipeline.Builder builder = new Pipeline.Builder();
-		builder.append(InputFilter.class);
+		//builder.append(InputFilter.class);
+		builder.append(FileInputFilter.class);
 		builder.append(CircularShifterFilter.class);
 		builder.append(IgnoreWordsFilter.class);
 		builder.append(AlphabetizerFilter.class);
